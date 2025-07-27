@@ -1,0 +1,32 @@
+{
+  "name": "@vinkas/firestore-express-session",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinkashq/firestore-express-session.git"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Vinoth Kannan",
+    "email": "vinoth.kannan@vinkas.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vinkashq/firestore-express-session/issues"
+  },
+  "homepage": "https://github.com/vinkashq/firestore-express-session#readme",
+  "devDependencies": {
+    "@types/express-session": "^1.18.2",
+    "express-session": "^1.18.2",
+    "firebase-admin": "^13.4.0",
+    "typescript": "^5.8.3"
+  }
+}
