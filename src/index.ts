@@ -1,17 +1,21 @@
 import {Store} from 'express-session';
 import {getFirestore,Firestore,CollectionReference,DocumentData} from 'firebase-admin/firestore';
+import {Parser, parser} from './parser';
 
 export type FirestoreOptions = {
   collection?: string;
   database?: Firestore;
+  parser?: Parser;
 }
 
 export default class FirestoreStore extends Store {
   collection: CollectionReference<DocumentData, DocumentData>;
+  parser: Parser;
 
   constructor(options: FirestoreOptions) {
     super();
 
+    this.parser = options.parser || parser;
     const database = options.database || getFirestore();
     const collection = options.collection || "sessions";
 
@@ -20,13 +24,33 @@ export default class FirestoreStore extends Store {
 
   all(callback: (err: Error | null, sessions?: Record<string, any>) => void): void {
     this.collection.get().then(snapshot => {
-      const sessions = snapshot.docs.map(doc => {
-        return doc.data();
-      });
+      const sessions = snapshot.docs.map(doc => this.parser.read(doc));
       callback(null, sessions);
     }).catch(err => {
       callback(err);
     });
+  }
+
+  get(sid: string, callback: (err: Error | null, session?: any) => void): void {
+    this.collection.doc(sid).get().then(doc => {
+      const data = this.parser.read(doc);
+      callback(null, data);
+    }).catch(err => {
+      callback(err);
+    });
+  }
+
+  set(sid: string, session: any, callback: (err?: any) => void): void {
+    const data = this.parser.save(session);
+    this.collection.doc(sid).set(data).then(() => {
+      callback();
+    }).catch(err => {
+      callback(err);
+    });
+  }
+
+  touch(sid: string, session: any, callback: (err?: any) => void): void {
+    this.set(sid, session, callback);
   }
 
   destroy(sid: string, callback: (err?: any) => void): void {
@@ -49,29 +73,5 @@ export default class FirestoreStore extends Store {
     }).catch(err => {
       callback(err);
     });
-  }
-
-  get(sid: string, callback: (err: Error | null, session?: any) => void): void {
-    this.collection.doc(sid).get().then(doc => {
-      if (!doc.exists) {
-        return callback(null, null);
-      }
-      const data = doc.data();
-      callback(null, data);
-    }).catch(err => {
-      callback(err);
-    });
-  }
-
-  set(sid: string, session: any, callback: (err?: any) => void): void {
-    this.collection.doc(sid).set(session).then(() => {
-      callback();
-    }).catch(err => {
-      callback(err);
-    });
-  }
-
-  touch(sid: string, session: any, callback: (err?: any) => void): void {
-    this.set(sid, session, callback);
   }
 }
