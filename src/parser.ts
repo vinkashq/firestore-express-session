@@ -1,8 +1,9 @@
+import { SessionData } from "express-session";
 import { DocumentData, DocumentSnapshot, PartialWithFieldValue, QueryDocumentSnapshot } from "firebase-admin/firestore";
 
 export type Parser = {
-  read: (doc: DocumentSnapshot<DocumentData, DocumentData> | QueryDocumentSnapshot<DocumentData, DocumentData>) => DocumentData | null;
-  save: (doc: any) => PartialWithFieldValue<DocumentData>;
+  read: (doc: DocumentSnapshot<DocumentData, DocumentData> | QueryDocumentSnapshot<DocumentData, DocumentData>) => SessionData | null;
+  save: (data: SessionData) => PartialWithFieldValue<DocumentData>;
 };
 
 export const parser: Parser = {
@@ -16,10 +17,13 @@ export const parser: Parser = {
       return null;
     }
 
-		return data;
+		return JSON.parse(data.value as string) as SessionData;
 	},
 
-	save(doc) {
-		return doc as PartialWithFieldValue<DocumentData>;
+	save(data: SessionData) {
+    const doc = {
+      value: JSON.stringify(data),
+    } as PartialWithFieldValue<DocumentData>;
+		return doc;
 	},
 };
